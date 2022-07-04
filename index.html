@@ -1,20 +1,54 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
-</head>
-<body>
+  </head>
+  <body>
     <h1>Hello Ama</h1>
+    <button id="btnCreate">New Game</button>
     <script>
-        let ws = new WebSocket('ws://localhost:9090')
-        ws.onmessage = message =>{
-            // message.data
-            const response = JSON.parse(message.data);
-            console.log(response)
+      // HTML elements
+      let clientId = null;
+      let gameId = null;
+
+      let ws = new WebSocket("ws://localhost:9090");
+
+      const btnCreate = document.getElementById("btnCreate");
+
+      btnCreate.addEventListener("click", (e) => {
+        const payLoad = {
+          method: "create",
+          clientId: clientId,
+        };
+
+        ws.send(JSON.stringify(payLoad));
+      });
+
+      ws.onmessage = message => {
+        // message.data
+        const response = JSON.parse(message.data);
+
+        // connect
+        if (response.method === "connect") {
+          clientId = response.clientId;
+          console.log("Client id set successfully" + clientId);
         }
+
+        // create
+        if (response.method === "create") {
+          gameId = response.clientId;
+          console.log(
+            "game successfully created with id" +
+              response.game.id +
+              "with" +
+              response.game.balls +
+              " cells"
+          );
+        }
+      };
     </script>
-</body>
+  </body>
 </html>

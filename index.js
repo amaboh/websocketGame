@@ -1,53 +1,85 @@
-const http = require('http');
+const http = require("http");
+const { resourceLimits } = require("worker_threads");
 
 const app = require("express")();
 
-app.get("/", (req,res)=> res.sendFile(__dirname + "/index.html"))
-app.listen(9091, ()=> console.log("listening on http port 9091"))
+app.get("/", (req, res) => res.sendFile(__dirname + "/index.html"));
+app.listen(9091, () => console.log("listening on http port 9091"));
 
 const httpServer = http.createServer();
-const webSocketServer = require("websocket").server
+const webSocketServer = require("websocket").server;
 
-httpServer.listen(9090, ()=>{
-    console.log("listening on port 9090")
-})
+httpServer.listen(9090, () => {
+  console.log("listening on port 9090");
+});
 
-// hashmap clients  
-const clients = {};   
+// hashmap clients
+const clients = {};
+const games = {};
 
 const wsServer = new webSocketServer({
-    "httpServer" : httpServer,
-})
+  httpServer: httpServer,
+});
 
-wsServer.on("request", request => {
-    // connect
+wsServer.on("request", (request) => {
+  // connect
 
-    const connection =  request.accept(null, request.origin);
-    connection.on("open", () => console.log("Opened!"))
-    connection.on("close", () => console.log("Closed!"))
-    connection.on("message", message=>{
+  const connection = request.accept(null, request.origin);
+  connection.on("open", () => console.log("Opened!"));
+  connection.on("close", () => console.log("Closed!"));
+  connection.on("message", (message) => {
+    const result = JSON.parse(message.utf8Data);
+    // I have received a message from the client
+    // a user want to crate a new game
+    if (result.method === "create") {
+      const clientId = result.clientId;
+      const gameId = guid();
+      games[gameId] = {
+        id: gameId,
+        balls: 20,
+      };
 
-        // I have received a message from the client
+      const payLoad = {
+        method: "create",
+        game: games[gameId],
+      };
 
-    }) 
-
-    // generate a new clientId
-    const clientId = guid();
-    clients[clientId] = {
-        "connection": connection
+      const con = clients[clientId].connection;
+      con.send(JSON.stringify(payLoad));
     }
+  });
 
-    const payLoad = {
-        "method": "connect",
-        "clientId": clientId
-    }
+  // generate a new clientId
+  const clientId = guid();
+  clients[clientId] = {
+    connection: connection,
+  };
 
-    connection.send(JSON.stringify(payLoad ))
-})
+  const payLoad = {
+    method: "connect",
+    clientId: clientId,
+  };
+
+  connection.send(JSON.stringify(payLoad));
+});
 
 function S4() {
-    return (((1+Math.random())*0x10000)|0).toString(16).substring(1); 
+  return (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);
 }
- 
+
 // then to call it, plus stitch in '4' in the third group
-const guid = () => (S4() + S4() + "-" + S4() + "-4" + S4().substr(0,3) + "-" + S4() + "-" + S4() + S4() + S4()).toLowerCase();
+const guid = () =>
+  (
+    S4() +
+    S4() +
+    "-" +
+    S4() +
+    "-4" +
+    S4().substr(0, 3) +
+    "-" +
+    S4() +
+    "-" +
+    S4() +
+    S4() +
+    S4()
+  ).toLowerCase();
