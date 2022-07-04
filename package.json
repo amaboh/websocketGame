@@ -1,0 +1,23 @@
+{
+  "name": "websocketgame",
+  "version": "1.0.0",
+  "description": "A game with multi player option with websocket",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/amaboh/websocketGame.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/amaboh/websocketGame/issues"
+  },
+  "homepage": "https://github.com/amaboh/websocketGame#readme",
+  "dependencies": {
+    "websocket": "^1.0.34"
+  }
+}
